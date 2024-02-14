@@ -35,3 +35,18 @@ h1>span {
     left: 33%;
     margin-left: -6px;
 }
+
+.leaflet-reset-container {
+    padding: 15px;
+    border: 0;
+    background-color: white;
+    border-radius: 10px;
+    font-size: 1.3rem;
+    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+    display: none;
+    cursor: pointer;
+}
+
+.leaflet-reset-container.visible {
+    display: block;
+}

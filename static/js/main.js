@@ -4,6 +4,24 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 }).addTo(map);
 
+var resetContainer = L.DomUtil.create('button', 'leaflet-reset-container');
+resetContainer.innerText = "↺ Restart"
+
+L.Control.ResetButton = L.Control.extend({
+    onAdd: function (map) {
+        return resetContainer;
+    },
+    onRemove: function (map) {
+        // Nothing to do here
+    }
+});
+
+L.control.resetbutton = function (opts) {
+    return new L.Control.ResetButton(opts);
+}
+var resetControl = L.control.resetbutton({ position: 'bottomleft' }).addTo(map);
+
+
 var daveIcon = L.icon({
     iconUrl: 'static/img/dave.png',
     iconSize: [120, 120],
@@ -11,6 +29,7 @@ var daveIcon = L.icon({
 
 var dave_markers = L.featureGroup().addTo(map);
 var dave_route = L.polyline([]);
+var dave_route_segments = L.featureGroup().addTo(map);
 
 daves.forEach(function (dave) {
     dave_route.addLatLng([dave.lat, dave.long]);
@@ -27,7 +46,7 @@ function createDave(marker_i, point_latlng) {
             [previous_point.lat, previous_point.long],
             [p.lat, p.long]
         ], { color: '#f95162', weight: 5 });
-        line.addTo(map);
+        dave_route_segments.addLayer(line);
     }
 }
 
@@ -40,6 +59,7 @@ var animatedMarker = L.animatedMarker(dave_route.getLatLngs(), {
         var marker_i = this._i - 1;
         if (marker_i < 0) {
             dave_markers.clearLayers();
+            dave_route_segments.clearLayers();
             return
         }
         var point_latlng = this._latlngs[marker_i];
@@ -48,6 +68,14 @@ var animatedMarker = L.animatedMarker(dave_route.getLatLngs(), {
     onEnd: function () {
         var point_latlng = this._latlngs[this._i - 1];
         createDave(this._i - 1, point_latlng);
+        // add visible class to reset button
+        resetContainer.classList.add('visible');
+        var thisAnimatedMarker = this;
+        resetContainer.onclick = function () {
+            thisAnimatedMarker._i = 0;
+            thisAnimatedMarker.start();
+            resetContainer.classList.remove('visible');
+        }
     }
 });
 animatedMarker.addTo(map);
